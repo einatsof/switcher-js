@@ -135,14 +135,15 @@ class Switcher extends EventEmitter {
 
 		})
 
-		if (discovery_timeout);
-		timeout = setTimeout(() => {
-			log(`stopping discovery, closing sockets`);
-			sockets.forEach(socket => {
-				socket.close();
-				socket = null;
-			})
-		}, discovery_timeout * 1000);
+		if (discovery_timeout) {
+			timeout = setTimeout(() => {
+				log(`stopping discovery, closing sockets`);
+				sockets.forEach(socket => {
+					socket.close();
+					socket = null;
+				})
+			}, discovery_timeout * 1000);
+		}
 
 		proxy.close = () => {
 			log('closing discover socket');
