@@ -30,20 +30,35 @@ Use [npm](https://www.npmjs.com/) to install switcher-js.
 npm install switcher-js2
 ```
 
-## Usage Examples:
+## Usage:
+First, import the Switcher class from the switcher-js2 module:
 ```javascript
 const Switcher = require('switcher-js2');
-
-var switcher = new Switcher('device-id', 'device-ip', 'log function', 'listen(boolean)', 'device-type');
 ```
+The Switcher class represents a switcher device and provides methods to interact with it. To create a new instance of the Switcher class, use the following constructor:
+```javascript
+let switcher = new Switcher(deviceID, deviceIP, logFunction, listenEnabled, deviceType);
+```
+* `deviceID` (string): The identifier of the switcher device.
+* `deviceIP` (string): The IP address of the switcher device.
+* `logFunction` (function): A callback function to handle log messages.
+* `listenEnabled` (boolean): Specifies whether listening is enabled for device status messages.
+* `deviceType` (string): The type of the switcher device.
 
 ### Discover
+#### discover(logFunction[, deviceIdentifier[, discoveryTimeout]])
+Discovers switcher devices on the network.
+* `logFunction` (required): A callback function that handles log messages.
+* `deviceIdentifier` (optional): A specific device identifier used to filter the discovery process. It could be Switcher name, IP or device-id. Only devices matching the provided identifier will be included in the result. If not specified, all available devices will be returned.
+* `discoveryTimeout` (optional): The duration (in seconds) for which the discovery process should run.
+
+discover will emit a ready event when auto discovery completed.
 
 To use the auto discover functionallity use: 
 ```javascript
 const Switcher = require('switcher-js2');
 
-var proxy = Switcher.discover('log function', 'identifier(optional)', 'discovery-timeout(optional)');
+let proxy = Switcher.discover(console.log);
 
 proxy.on('ready', (switcher) => {
     switcher.turn_on(); // switcher is a new initialized instance of Switcher class
@@ -51,15 +66,10 @@ proxy.on('ready', (switcher) => {
 
 
 setTimeout(() => {
-    proxy.close(); // optional way to close the discovery (if discovery-timeout is not set)
+    proxy.close(); // optional way to close the discovery (if discoveryTimeout is not set)
 }, 10000);
 
 ```
-
-discover will emit a ready event when auto discovery completed.
-
-identifier (optional) - you can provide the Switcher name, IP or device-id to detect specific device.<br/>
-discovery-timeout (optional) - set maximum time in seconds to scan for devices.
 
 
 ### Control
@@ -67,10 +77,10 @@ discovery-timeout (optional) - set maximum time in seconds to scan for devices.
 ```javascript
 const Switcher = require('switcher-js2');
 
-var switcher = new Switcher('device-id', 'device-ip', 'log function', 'listen', 'device-type'); 
-// set listen to true if you want to listen for status messages
+let switcher = new Switcher(deviceID, deviceIP, console.log, true, deviceType);
 
-switcher.on('status', (status) => { // status broadcast message - only works when listen=true
+// status broadcast message - only works when listenEnabled is true
+switcher.on('status', (status) => { 
     console.log(status)
     /* response:
     {
@@ -103,10 +113,10 @@ switcher.close();     // closes any dangling connections safely
 ```javascript
 const Switcher = require('switcher-js2');
 
-var runner = new Switcher('device-id', 'device-ip', 'log function', 'listen', 'runner'); 
+let runner = new Switcher(deviceID, deviceIP, logFunction, listenEnabled, 'runner'); 
 // set 'device-type' to 'runner' if you want to control the runner devices
 
-runner.on('status', (status) => { // status broadcast message - only works when listen=true
+runner.on('status', (status) => { // status broadcast message - only works when listenEnabled=true
     console.log(status)
     /* response:
     {
@@ -130,14 +140,16 @@ switcher.close();     // closes any dangling connections safely
 ```
 
 ### Listen
-
-Global listen functionality that listens to a single or multiple switcher devices for status messages.
+#### listen(logFunction[, deviceIdentifier])
+A global listen functionality that listens to a single or multiple switcher devices for status messages.
+* `logFunction` (required): A callback function that handles log messages.
+* `deviceIdentifier` (optional) - you can provide the Switcher name, IP or device-id to filter specific device messages.
 
 To use the listen functionallity use: 
 ```javascript
 const Switcher = require('switcher-js2');
 
-var proxy = Switcher.listen('log function', 'identifier(optional)');
+let proxy = Switcher.listen(console.log);
 
 proxy.on('message', (message) => {
     console.log(message)
@@ -163,11 +175,9 @@ proxy.close(); // close the listener socket
 
 proxy will emit a message event every time it receives a message from a switcher device.
 
-identifier (optional) - you can provide the Switcher name, IP or device-id to filter specific device messages.
-
 ## Multiple Connections
 
-Don't use Discover, Listen and Switcher with (listen=true) at the same time as it will return error since this socket is being used.
+Don't use Discover, Listen and Switcher with (listenEnabled=true) at the same time as it will return error since this socket is being used.
 If you want to listen to multiple devices, use the global listen function to get all statuses, and use the switcher instance without the listen capability.
 
 ## Contributing
